@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pesan Spesial 💌</title>
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#fff8fb;
+    --bg2:#fffafb;
+    --pink:#ff6f92;
+    --rose:#ff8aa8;
+    --muted:#6b7280;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+  html,body{height:100%}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+        background:radial-gradient(1200px 600px at 10% 10%, rgba(255,110,140,0.06), transparent),
+                   linear-gradient(180deg,var(--bg1),var(--bg2));
+        padding:24px;color:#111;}
+  .card{width:100%;max-width:760px;background:var(--card);border-radius:18px;padding:28px;
+        box-shadow:0 12px 40px rgba(11,22,39,0.06);text-align:center;position:relative;overflow:hidden}
+  .top-deco{position:absolute;right:-120px;top:-60px;width:320px;height:320px;background:linear-gradient(135deg,rgba(255,111,146,0.12),rgba(255,138,160,0.06));border-radius:50%;filter:blur(24px);pointer-events:none}
+  .badge{width:96px;height:96px;border-radius:999px;background:linear-gradient(135deg,var(--pink),var(--rose));display:inline-flex;align-items:center;justify-content:center;color:white;font-size:34px;box-shadow:0 10px 30px rgba(255,92,138,0.18);margin-bottom:6px}
+  h1{margin:10px 0 6px;font-size:22px;font-weight:600}
+  p.lead{color:var(--muted);margin:6px 0 18px}
+  .qr-box{width:200px;height:200px;margin:14px auto;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#c4b3bb;background:linear-gradient(180deg,#fff,#fff);border:3px dashed #fdeef3}
+  .bubble{background:linear-gradient(180deg,#fff,#fffefc);border-radius:12px;padding:14px;text-align:left;min-height:140px;color:#111;white-space:pre-wrap;line-height:1.6;border:1px solid rgba(250,230,236,0.7)}
+  .btn{display:inline-block;padding:10px 18px;border-radius:999px;border:none;cursor:pointer;font-weight:700;letter-spacing:0.2px}
+  .btn-primary{background:linear-gradient(90deg,var(--pink),var(--rose));color:#fff;box-shadow:0 8px 24px rgba(255,111,146,0.14)}
+  .btn-ghost{background:transparent;border:1px solid #eee;color:#111;padding:9px 16px}
+  .muted{color:#9aa0ab;font-size:13px;margin-top:12px}
+  .center{display:flex;gap:12px;justify-content:center;margin-top:16px}
+  .heart-wrap{position:relative;height:160px;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .pulse{position:absolute;width:140px;height:140px;border-radius:999px;background:rgba(255,111,146,0.12);animation:ping 1.6s infinite}
+  .heart{position:relative;width:84px;height:84px;border-radius:999px;background:#ff6a8a;display:flex;align-items:center;justify-content:center;color:white;font-size:34px;box-shadow:0 12px 30px rgba(255,92,138,0.18)}
+  @keyframes ping{0%{transform:scale(.85);opacity:0.95}70%{transform:scale(1.6);opacity:0.18}100%{transform:scale(1.95);opacity:0}}
+  canvas.confetti{position:fixed;left:0;top:0;pointer-events:none;z-index:9999}
+  footer{font-size:12px;color:#9aa0ab;margin-top:18px}
+  /* shy button */
+  .btn-shy{position:relative;transition:transform .2s ease;border-radius:999px;padding:10px 18px}
+  /* small */
+  @media(max-width:520px){.card{padding:18px}.badge{width:80px;height:80px;font-size:28px}.qr-box{width:160px;height:160px}}
+</style>
+</head>
+<body>
+<div class="card" id="root">
+  <div class="top-deco" aria-hidden="true"></div>
+  <div class="badge" aria-hidden="true">💌</div>
+  <h1>Scan QR ini</h1>
+  <p class="lead">Khusus buat kamu — jangan buru-buru. Baca perlahan.</p>
+
+  <div class="qr-box" id="qr-placeholder">QR SAMPUL</div>
+
+  <div id="stage-intro" style="display:block">
+    <p class="muted">(Halaman akan menampilkan pesan setelah beberapa detik...)</p>
+  </div>
+
+  <div id="stage-confess" style="display:none">
+    <div class="heart-wrap" aria-hidden="true">
+      <div class="pulse" style="--d:1s"></div>
+      <div class="heart" aria-hidden="true">❤</div>
+    </div>
+
+    <div class="bubble" id="typed">...</div>
+
+    <div class="center" style="margin-top:12px">
+      <button class="btn btn-primary" id="btn-next">Lanjut...</button>
+    </div>
+  </div>
+
+  <div id="stage-question" style="display:none">
+    <h2 style="margin-top:6px;font-size:18px">Jadi... mau nggak kamu jadi pacarku?</h2>
+    <p class="muted">Pilih jujur. Aku janji tetap baik apapun jawabannya.</p>
+    <div class="center" style="margin-top:14px">
+      <button class="btn btn-primary" id="btn-yes">Iya</button>
+      <button class="btn btn-ghost btn-shy" id="btn-no">Maaf</button>
+    </div>
+  </div>
+
+  <div id="stage-result" style="display:none"></div>
+
+  <footer>Dibuat khusus untuk moment spesialmu — lembut, tapi tulus 💌</footer>
+</div>
+
+<canvas class="confetti" id="confetti-canvas" style="display:none"></canvas>
+
+<script>
+(function(){
+  // CONFESS TEXT (serius tapi santai lucu)
+  const confess = `Oke... dengerin ya. Ini bukan prank, bukan juga skripsi.
+
+Aku udah lama mikirin ini... dan hasil rapat internal hati kecilku memutuskan: aku suka sama kamu. 😳
+
+Serius, aku nggak ngakak waktu nulis ini. Kalau kamu juga, mungkin kita bisa coba bareng-bareng.`;
+
+  const typedEl = document.getElementById('typed');
+  const stageIntro = document.getElementById('stage-intro');
+  const stageConfess = document.getElementById('stage-confess');
+  const stageQuestion = document.getElementById('stage-question');
+  const stageResult = document.getElementById('stage-result');
+  const btnNext = document.getElementById('btn-next');
+  const btnYes = document.getElementById('btn-yes');
+  const btnNo = document.getElementById('btn-no');
+  const qrPlaceholder = document.getElementById('qr-placeholder');
+  const confettiCanvas = document.getElementById('confetti-canvas');
+
+  function show(el){ el.style.display = ''; }
+  function hide(el){ el.style.display = 'none'; }
+
+  // simulate "scan" arrival
+  setTimeout(() => {
+    hide(stageIntro);
+    show(stageConfess);
+    typeText(confess, typedEl, 30);
+    // replace qr placeholder with small hint QR graphic (decorative)
+    qrPlaceholder.innerHTML = '<svg width="140" height="140" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="6" height="6" rx="1.2" fill="#ffdce6"/><rect x="16" y="2" width="6" height="6" rx="1.2" fill="#ffdce6"/><rect x="2" y="16" width="6" height="6" rx="1.2" fill="#ffdce6"/><rect x="10" y="10" width="4" height="4" rx="0.8" fill="#ff6f92"/></svg><div style="font-size:12px;color:#c7a1ad;margin-top:8px">Scan & baca</div>';
+  }, 1200);
+
+  btnNext.addEventListener('click', () => {
+    hide(stageConfess);
+    show(stageQuestion);
+  });
+
+  btnYes.addEventListener('click', () => {
+    showResult(true);
+  });
+
+  // Shy behaviour for 'No' button: it moves away when mouse gets near
+  (function shyButton(btn){
+    let moved = false;
+    function moveRandom(){
+      const parent = btn.parentElement;
+      const w = parent.clientWidth - btn.offsetWidth - 8;
+      const x = Math.random() * w;
+      btn.style.transform = `translateX(${x}px)`;
+    }
+    btn.addEventListener('mouseenter', (e)=>{
+      moveRandom();
+    });
+    // also on click, if somehow clicked, show playful rejection
+    btn.addEventListener('click', ()=>{
+      // small animation then show result as 'no'
+      btn.style.transform = 'scale(0.92)';
+      setTimeout(()=>{ btn.style.transform=''; showResult(false); }, 220);
+    });
+  })(btnNo);
+
+  function typeText(text, el, speed){
+    el.textContent = '';
+    let i=0;
+    const t = setInterval(() => {
+      el.textContent += text.charAt(i);
+      i++;
+      if(i>=text.length){ clearInterval(t); }
+      el.scrollTop = el.scrollHeight;
+    }, speed);
+  }
+
+  function showResult(ok){
+    hide(stageQuestion);
+    stageResult.innerHTML = '';
+    if(ok){
+      const h = document.createElement('h2'); h.textContent = 'YESS! 💖'; h.style.color = '#ff567d'; h.style.fontSize='20px'; h.style.margin='8px 0';
+      const p = document.createElement('p'); p.textContent = 'Makasih! Aku seneng banget — nanti kita atur kencan kecil ya.'; p.style.margin='6px 0'; p.style.color='#444';
+      stageResult.appendChild(h); stageResult.appendChild(p);
+      triggerConfetti();
+    } else {
+      const h = document.createElement('h2'); h.textContent = 'Oke, aku paham.'; h.style.color = '#333'; h.style.fontSize='20px'; h.style.margin='8px 0';
+      const p = document.createElement('p'); p.textContent = 'Gak apa-apa — aku tetap menghargai kamu. Kalau berubah pikiran, QR ini masih ada.'; p.style.margin='6px 0'; p.style.color='#666';
+      stageResult.appendChild(h); stageResult.appendChild(p);
+    }
+    show(stageResult);
+  }
+
+  // Simple confetti on canvas (lightweight)
+  function triggerConfetti(){
+    confettiCanvas.style.display = '';
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+    const ctx = confettiCanvas.getContext('2d');
+    const pieces = [];
+    for(let i=0;i<70;i++){
+      pieces.push({
+        x: window.innerWidth/2,
+        y: window.innerHeight/3,
+        vx: (Math.random()-0.5)*8,
+        vy: Math.random()*-10 - 2,
+        r: 3 + Math.random()*6,
+        c: `hsl(${Math.floor(Math.random()*340)},80%,60%)`,
+        rot: Math.random()*360
+      });
+    }
+    let t=0;
+    function draw(){
+      t++;
+      ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+      for(const p of pieces){
+        p.vy += 0.25;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vx*2;
+        ctx.save();
+        ctx.translate(p.x,p.y);
+        ctx.rotate(p.rot*Math.PI/180);
+        ctx.fillStyle = p.c;
+        ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);
+        ctx.restore();
+      }
+      if(t<220) requestAnimationFrame(draw);
+      else confettiCanvas.style.display='none';
+    }
+    draw();
+  }
+
+  // Accessibility: allow keyboard enter for yes
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Enter' && stageQuestion.style.display!=='none'){
+      showResult(true);
+    }
+  });
+
+  // Prevent accidental text selection while holding mouse
+  document.addEventListener('mousedown',()=>document.body.style.userSelect='none');
+  document.addEventListener('mouseup',()=>document.body.style.userSelect='auto');
+
+})();
+</script>
+</body>
+</html>
